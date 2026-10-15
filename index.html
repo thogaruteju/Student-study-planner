@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>My Study Planner</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4ff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px #d5dced;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4936a8;
+        }
+
+        p {
+            text-align: center;
+            color: #555;
+        }
+
+        input, select, button {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        button {
+            background: #5b48d6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        li {
+            background: #f4f2ff;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        li button {
+            width: auto;
+            margin-left: 5px;
+            padding: 8px;
+        }
+
+        .done {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .delete {
+            background: #e34d5b;
+        }
+
+        #progress {
+            font-weight: bold;
+            color: #4936a8;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h1>📚 My Study Planner</h1>
+    <p>Plan your day. Achieve your goals!</p>
+
+    <h3>Add a Study Task</h3>
+
+    <input id="task" placeholder="Enter task or topic">
+
+    <select id="subject">
+        <option value="C Programming">C Programming</option>
+        <option value="Mathematics">Mathematics</option>
+        <option value="Engineering Chemistry">
+            Engineering Chemistry
+        </option>
+        <option value="Physics">Physics</option>
+        <option value="Other">Other</option>
+    </select>
+
+    <input id="deadline" type="date">
+
+    <button onclick="addTask()">Add Task</button>
+
+    <h3>My Tasks</h3>
+    <ul id="taskList"></ul>
+
+    <p id="progress">Completed: 0 / 0</p>
+</div>
+
+<script>
+    let tasks = JSON.parse(
+        localStorage.getItem("studyTasks") || "[]"
+    );
+
+    function saveTasks() {
+        localStorage.setItem(
+            "studyTasks",
+            JSON.stringify(tasks)
+        );
+    }
+
+    function addTask() {
+        const name =
+            document.getElementById("task").value.trim();
+        const subject =
+            document.getElementById("subject").value;
+        const deadline =
+            document.getElementById("deadline").value;
+
+        if (name === "") {
+            alert("Please enter a task!");
+            return;
+        }
+
+        tasks.push({
+            name: name,
+            subject: subject,
+            deadline: deadline,
+            done: false
+        });
+
+        saveTasks();
+        document.getElementById("task").value = "";
+        renderTasks();
+    }
+
+    function toggleTask(index) {
+        tasks[index].done = !tasks[index].done;
+        saveTasks();
+        renderTasks();
+    }
+
+    function deleteTask(index) {
+        tasks.splice(index, 1);
+        saveTasks();
+        renderTasks();
+    }
+
+    function renderTasks() {
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+
+        tasks.forEach(function(task, index) {
+            const li = document.createElement("li");
+            const name = document.createElement("span");
+
+            name.textContent =
+                task.name + " — " + task.subject +
+                (task.deadline ? " — Due: " + task.deadline : "");
+
+            if (task.done) {
+                name.className = "done";
+            }
+
+            li.appendChild(name);
+            li.appendChild(document.createElement("br"));
+
+            const complete = document.createElement("button");
+            complete.textContent =
+                task.done ? "Undo" : "Complete";
+            complete.onclick = function() {
+                toggleTask(index);
+            };
+
+            const remove = document.createElement("button");
+            remove.textContent = "Delete";
+            remove.className = "delete";
+            remove.onclick = function() {
+                deleteTask(index);
+            };
+
+            li.appendChild(complete);
+            li.appendChild(remove);
+            list.appendChild(li);
+        });
+
+        const completed = tasks.filter(
+            task => task.done
+        ).length;
+
+        document.getElementById("progress").textContent =
+            "Completed: " + completed + " / " + tasks.length;
+    }
+
+    renderTasks();
+</script>
+</body>
+</html>
